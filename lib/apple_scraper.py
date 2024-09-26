@@ -52,25 +52,9 @@ class AppleJobScraper(JobScraper):
         page = 1
 
         while True:
-            json_data = {
-                'query': '',
-                'filters': {
-                    'postingpostLocation': [
-                        'postLocation-CHEC',
-                    ],
-                    'range': {
-                        'standardWeeklyHours': {
-                            'start': None,
-                            'end': None,
-                        },
-                    },
-                },
-                'page': page,
-                'locale': 'de-ch',
-                'sort': '',
-            }
+            self.json_data["page"] = page
 
-            response = requests.post('https://jobs.apple.com/api/role/search', json=json_data).json()
+            response = requests.post('https://jobs.apple.com/api/role/search', json=self.json_data).json()
             jobs_on_page = response['searchResults']
             all_jobs.extend(jobs_on_page)
 
