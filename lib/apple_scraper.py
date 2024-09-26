@@ -6,7 +6,6 @@ import logging
 import re
 import json
 
-
 class AppleJobListing(JobListing):
     def __init__(self, listing_id: str, title:str, team: str, description: str):
         self.id = listing_id
@@ -53,7 +52,6 @@ class AppleJobScraper(JobScraper):
 
         while True:
             self.json_data["page"] = page
-
             response = requests.post('https://jobs.apple.com/api/role/search', json=self.json_data).json()
             jobs_on_page = response['searchResults']
             all_jobs.extend(jobs_on_page)
