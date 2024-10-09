@@ -7,6 +7,7 @@ from lib.apple_scraper import AppleJobScraper
 from lib.microsoft_scraper import MicrosoftJobScraper
 from lib.snap_scraper import SnapJobScraper
 from lib.amazon_scraper import AmazonJobScraper
+from lib.bkw_scraper import BKWJobScraper
 import time
 import json
 import os
@@ -41,8 +42,7 @@ def send_telegram_photo_file(bot_token: str, chat_id: str, file_path: str, capti
         logging.error("Unable to send Update via Telegram")
 
 # Set up logging configuration
-scrapers = [GoogleJobScraper(), MetaJobScraper(), NvidiaJobScraper(), AppleJobScraper(), MicrosoftJobScraper(), SnapJobScraper(), AmazonJobScraper()]
-
+scrapers = [GoogleJobScraper(), MetaJobScraper(), NvidiaJobScraper(), AppleJobScraper(), MicrosoftJobScraper(), SnapJobScraper(), AmazonJobScraper(), BKWJobScraper()]
 for scraper in scrapers:
     
     old_jobs = scraper.load_previous_state()
