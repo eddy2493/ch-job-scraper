@@ -45,7 +45,6 @@ def send_telegram_photo_file(bot_token: str, chat_id: str, file_path: str, capti
 
 # Set up logging configuration
 scrapers = [GoogleJobScraper(), MetaJobScraper(), NvidiaJobScraper(), AppleJobScraper(), MicrosoftJobScraper(), SnapJobScraper(), AmazonJobScraper(), BKWJobScraper(), LGTCPJobScraper()]
-scrapers = [JBJobScraper()]
 for scraper in scrapers:
     
     old_jobs = scraper.load_previous_state()
