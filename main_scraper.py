@@ -9,6 +9,7 @@ from lib.snap_scraper import SnapJobScraper
 from lib.amazon_scraper import AmazonJobScraper
 from lib.bkw_scraper import BKWJobScraper
 from lib.lgtcp_scraper import LGTCPJobScraper
+from lib.juliusbaer_scraper import JBJobScraper
 import time
 import json
 import os
@@ -44,6 +45,7 @@ def send_telegram_photo_file(bot_token: str, chat_id: str, file_path: str, capti
 
 # Set up logging configuration
 scrapers = [GoogleJobScraper(), MetaJobScraper(), NvidiaJobScraper(), AppleJobScraper(), MicrosoftJobScraper(), SnapJobScraper(), AmazonJobScraper(), BKWJobScraper(), LGTCPJobScraper()]
+scrapers = [JBJobScraper()]
 for scraper in scrapers:
     
     old_jobs = scraper.load_previous_state()
