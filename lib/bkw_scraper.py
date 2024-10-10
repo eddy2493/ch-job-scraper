@@ -51,4 +51,4 @@ class BKWJobScraper(JobScraper):
         self.current_listings.extend([BKWJobListing(a["id"], a["title"], a["shadowSearchText"], a["url"]) for a in all_jobs])
         return self.current_listings
     def _create_listing_from_dict(self, data: Dict[str, Any]) -> BKWJobListing:
-        return BKWJobListing(data["id"], data["title"], data["description"], data["url"])
+        return BKWJobListing(data["id"], data["title"], data["description"], data["link"])
