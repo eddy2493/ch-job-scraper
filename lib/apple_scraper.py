@@ -28,23 +28,21 @@ class AppleJobScraper(JobScraper):
     def __init__(self):
         super().__init__(company_name="Apple")
         self.logo_path = "lib/apple.png"
-        self.url = 'https://jobs.apple.com/de-ch/search'
+        self.url = 'https://jobs.apple.com/api/v1/search'
         self.json_data = {
             'query': '',
             'filters': {
-                'postingpostLocation': [
+                'locations': [
                     'postLocation-CHEC',
                 ],
-                'range': {
-                    'standardWeeklyHours': {
-                        'start': None,
-                        'end': None,
-                    },
-                },
             },
             'page': 1,
-            'locale': 'de-ch',
+            'locale': 'en-us',
             'sort': '',
+            'format': {
+                'longDate': 'MMMM D, YYYY',
+                'mediumDate': 'MMM D, YYYY',
+            },
         }
     def scrape(self):
         all_jobs = []
@@ -52,7 +50,7 @@ class AppleJobScraper(JobScraper):
 
         while True:
             self.json_data["page"] = page
-            response = requests.post('https://jobs.apple.com/api/role/search', json=self.json_data).json()
+            response = requests.post('https://jobs.apple.com/api/v1/search', json=self.json_data).json()["res"]
             jobs_on_page = response['searchResults']
             all_jobs.extend(jobs_on_page)
 
