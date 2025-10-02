@@ -26,6 +26,8 @@ from lib.oracle_scraper import OracleJobScraper
 from lib.axpo_scraper import AxpoJobScraper
 from lib.mathrix_scraper import MathrixJobScraper
 from lib.imc_scraper import IMCJobScraper
+from lib.sbb_scraper import SBBJobScraper
+from lib.bundesverwaltung_scraper import BundesverwaltungJobScraper
 
 # Change the working directory to the script's directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -102,7 +104,7 @@ def send_telegram_photo_with_text(bot_token: str, chat_id: str, file_path: str, 
 
 # --- Main Loop ---
 scrapers = [GoogleJobScraper(), MetaJobScraper(), NvidiaJobScraper(
-), AppleJobScraper(), MicrosoftJobScraper(), SnapJobScraper(), AmazonJobScraper(), BKWJobScraper(), LGTCPJobScraper(), JBJobScraper(), LGTJobScraper(), ZKBJobScraper(), AlpiqJobScraper(), METJobScraper(), CitadelJobScraper(), QRTJobScraper(), GetYourGuideJobScraper(), IBMJobScraper(), OracleJobScraper(), AxpoJobScraper(), MathrixJobScraper(), IMCJobScraper()]
+), AppleJobScraper(), MicrosoftJobScraper(), SnapJobScraper(), AmazonJobScraper(), BKWJobScraper(), LGTCPJobScraper(), JBJobScraper(), LGTJobScraper(), ZKBJobScraper(), AlpiqJobScraper(), METJobScraper(), CitadelJobScraper(), QRTJobScraper(), GetYourGuideJobScraper(), IBMJobScraper(), OracleJobScraper(), AxpoJobScraper(), MathrixJobScraper(), IMCJobScraper(), SBBJobScraper(), BundesverwaltungJobScraper()]
 for scraper in scrapers:
     logging.info(f"Starting scraper for {scraper.company}")
     try:
