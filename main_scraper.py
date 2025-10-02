@@ -20,6 +20,7 @@ from lib.metgroup_scraper import METJobScraper
 from lib.citadel_scraper import CitadelJobScraper
 from lib.qrt_scraper import QRTJobScraper
 from lib.getyourguide_scraper import GetYourGuideJobScraper
+from lib.ibm_scraper import IBMJobScraper
 
 # Change the working directory to the script's directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -92,8 +93,7 @@ def send_telegram_photo_with_text(bot_token: str, chat_id: str, file_path: str, 
 
 
 # --- Main Loop ---
-scrapers = [GoogleJobScraper(), MetaJobScraper(), NvidiaJobScraper(
-), AppleJobScraper(), MicrosoftJobScraper(), SnapJobScraper(), AmazonJobScraper(), BKWJobScraper(), LGTCPJobScraper(), JBJobScraper(), LGTJobScraper(), ZKBJobScraper(), AlpiqJobScraper(), METJobScraper(), CitadelJobScraper(), QRTJobScraper(), GetYourGuideJobScraper()]
+scrapers = [IBMJobScraper()]
 for scraper in scrapers:
     logging.info(f"Starting scraper for {scraper.company}")
     try:
