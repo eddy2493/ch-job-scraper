@@ -55,7 +55,6 @@ class AlpiqJobScraper(JobScraper):
         }
 
     def scrape(self) -> List[AlpiqJobListing]:
-        logging.info("Scraping Alpiq jobs")
         listings = []
         page = 1
 

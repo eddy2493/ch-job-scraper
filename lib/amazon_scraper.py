@@ -52,29 +52,46 @@ class AmazonJobScraper(JobScraper):
     def scrape(self):
         all_jobs = []
         total_hits = None  # Will store the total number of results once retrieved
-        
+
+        headers = {
+            "Accept-Encoding": "gzip, deflate, br",  # prevent zstd
+            "User-Agent": "Mozilla/5.0 (compatible; JobScraper/1.0)"
+        }
+
         while True:
-            response = requests.get(self.url, params=self.params)
-            data = response.json()
-            
+            response = requests.get(self.url, params=self.params, headers=headers, timeout=20)
+            try:
+                data = response.json()
+            except Exception as e:
+                logging.error(f"{self.company} - Failed to parse JSON: {e}")
+                break
+
             # Check if response contains jobs
             if 'jobs' in data:
                 all_jobs.extend(data['jobs'])
             else:
                 break  # Exit if no jobs found
-            
+
             # Check total number of hits (this is only needed for the first request)
             if total_hits is None:
                 total_hits = data.get('hits', 0)
-            
+
             # Increment the offset for the next request (pagination)
             self.params['offset'] += self.params['result_limit']
-            
+
             # Break when all jobs are fetched
             if len(all_jobs) >= total_hits:
                 break
 
-        self.current_listings.extend([AmazonJobListing(a["id_icims"], a["title"], a["normalized_location"], "https://amazon.jobs"+a["job_path"]) for a in all_jobs])
+        self.current_listings.extend([
+            AmazonJobListing(
+                a["id_icims"],
+                a["title"],
+                a["normalized_location"],
+                "https://amazon.jobs" + a["job_path"]
+            )
+            for a in all_jobs
+        ])
         return self.current_listings
         
     def _create_listing_from_dict(self, data: Dict[str, Any]) -> AmazonJobListing:

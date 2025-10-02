@@ -48,7 +48,6 @@ class LGTJobScraper(JobScraper):
     def scrape(self) -> List[LGTJobListing]:
         page_url = self.start_url
         while True:
-            logging.info(f"Scraping page: {page_url}")
             response = requests.get(page_url)
             if response.status_code != 200:
                 logging.error(f"Could not scrape LGT (status={response.status_code}, url={page_url})")

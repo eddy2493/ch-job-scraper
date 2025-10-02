@@ -55,7 +55,6 @@ class ZKBJobScraper(JobScraper):
         self.logo_path = "lib/zkb.png"
 
     def scrape(self) -> List[ZKBJobListing]:
-        logging.info(f"Scraping ZKB jobs from {self.start_url}")
         response = requests.get(self.start_url)
         if response.status_code != 200:
             logging.error(f"Could not scrape ZKB (status={response.status_code})")

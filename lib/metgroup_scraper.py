@@ -45,7 +45,7 @@ class METJobScraper(JobScraper):
 
     def scrape(self):
         all_jobs = []
-
+    
         try:
             response = requests.get(self.url, params=self.params).json()
             jobs_on_page = response.get("content", [])
@@ -53,19 +53,20 @@ class METJobScraper(JobScraper):
         except Exception as e:
             logging.error(f"Unable to scrape {self.company}: {e}")
             return []
-
+    
         self.current_listings.extend([
             MetGroupJobListing(
                 listing_id=job["id"],
                 title=job["name"],
                 profession=job.get("function", {}).get("label", "N/A"),
                 location=job.get("location", {}).get("fullLocation", "N/A"),
-                link=job.get("ref", f"https://www.smartrecruiters.com/metgroup/job/{job['id']}")
+                link=f"https://jobs.smartrecruiters.com/METGroup/{job['id']}"
             )
             for job in all_jobs
         ])
-
+    
         return self.current_listings
+
 
     def _create_listing_from_dict(self, data: Dict[str, Any]) -> MetGroupJobListing:
         """
