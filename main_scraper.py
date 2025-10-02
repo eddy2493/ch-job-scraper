@@ -3,6 +3,7 @@ import requests
 import time
 import json
 import os
+from datetime import datetime, timedelta
 from lib.google_scraper import GoogleJobScraper
 from lib.meta_scraper import MetaJobScraper
 from lib.nvidia_scraper import NvidiaJobScraper
@@ -38,6 +39,9 @@ logging.basicConfig(
 
 with open('creds.txt', 'r') as file:
     telegram_acc = json.load(file)
+
+# Grace period: only report jobs as delisted after they've been missing for this long
+DELISTING_GRACE_PERIOD_HOURS = 4
 
 
 def chunk_by_jobs(jobs_list, header="", max_length=1000):
@@ -100,17 +104,53 @@ scrapers = [GoogleJobScraper(), MetaJobScraper(), NvidiaJobScraper(
 for scraper in scrapers:
     logging.info(f"Starting scraper for {scraper.company}")
     try:
-        old_jobs = scraper.load_previous_state()
+        old_jobs, last_seen_times = scraper.load_previous_state()
         new_jobs = scraper.scrape()
+
+        current_time = datetime.now()
+        current_time_str = current_time.isoformat()
 
         old_job_ids = {job.get_id(): job for job in old_jobs}
         new_job_ids = {job.get_id(): job for job in new_jobs}
 
+        # Find new listings
         new_listings = [job for jid, job in new_job_ids.items() if jid not in old_job_ids]
-        delisted_listings = [job for jid, job in old_job_ids.items() if jid not in new_job_ids]
+
+        # Update last_seen times for all jobs that are currently present
+        updated_last_seen = {}
+        for jid in new_job_ids.keys():
+            # If job exists, update its last_seen time
+            updated_last_seen[jid] = current_time_str
+
+        # For jobs that disappeared, keep their last_seen time from before
+        for jid in old_job_ids.keys():
+            if jid not in new_job_ids and jid in last_seen_times:
+                updated_last_seen[jid] = last_seen_times[jid]
+
+        # Find delisted jobs that have been missing for more than the grace period
+        delisted_listings = []
+        grace_period = timedelta(hours=DELISTING_GRACE_PERIOD_HOURS)
+
+        for jid, job in old_job_ids.items():
+            if jid not in new_job_ids:
+                # Job is missing - check if it's been missing long enough
+                last_seen_str = last_seen_times.get(jid, current_time_str)
+                try:
+                    last_seen = datetime.fromisoformat(last_seen_str)
+                    time_since_last_seen = current_time - last_seen
+
+                    if time_since_last_seen > grace_period:
+                        # Job has been missing for more than grace period
+                        delisted_listings.append(job)
+                        # Remove from last_seen tracking since we're reporting it as delisted
+                        if jid in updated_last_seen:
+                            del updated_last_seen[jid]
+                except (ValueError, TypeError):
+                    # If we can't parse the timestamp, treat as newly missing
+                    pass
 
         if new_listings or delisted_listings:
-            scraper.save()
+            scraper.save(last_seen_times=updated_last_seen)
             logging.info(f"{scraper.company} - {len(new_listings)} new, {len(delisted_listings)} delisted jobs")
 
             message_lines = []
@@ -137,6 +177,8 @@ for scraper in scrapers:
                         send_telegram_message(acc["token"], acc["chat_id"], chunk)
 
         else:
+            # Even if no changes to report, still save to update last_seen times
+            scraper.save(last_seen_times=updated_last_seen)
             logging.info(f"{scraper.company} - no changes")
 
         time.sleep(1)
