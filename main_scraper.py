@@ -23,6 +23,10 @@ from lib.getyourguide_scraper import GetYourGuideJobScraper
 from lib.ibm_scraper import IBMJobScraper
 from lib.oracle_scraper import OracleJobScraper
 from lib.axpo_scraper import AxpoJobScraper
+from lib.bundesverwaltung_scraper import BundesverwaltungJobScraper
+from lib.imc_scraper import IMCJobScraper
+from lib.mathrix_scraper import MathrixJobScraper
+from lib.sbb_scraper import SBBJobScraper
 
 # Change the working directory to the script's directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
