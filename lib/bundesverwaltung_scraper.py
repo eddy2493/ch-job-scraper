@@ -86,8 +86,9 @@ class BundesverwaltungJobScraper(JobScraper):
                         departments = job.get('attributes', {}).get('verwaltungseinheit', [])
                         department = departments[0] if departments else ''
 
-                        # Get job URL from API
-                        link = job.get('links', {}).get('directlink', '')
+                        # Build job URL
+                        viewkey = job.get('viewkey', '')
+                        link = f"https://jobs.admin.ch/job/{viewkey}"
 
                         listing = BundesverwaltungJobListing(
                             listing_id=job_id,
