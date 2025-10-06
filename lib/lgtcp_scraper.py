@@ -22,14 +22,6 @@ class LGTCPJobListing(JobListing):
     def get_id(self) -> str:
         return self.id
 
-    def generate_telegram_message(self) -> str:
-        return (
-            f"*{self.title}*\n"
-            f"{self.locations}\n"
-            f"Location from Link: {self.location_from_link}\n"
-            f"[Link]({self.link})"
-        )
-
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,

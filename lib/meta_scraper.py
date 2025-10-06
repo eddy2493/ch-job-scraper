@@ -16,9 +16,7 @@ class MetaJobListing(JobListing):
         
     def get_id(self):
         return self.id
-    def generate_telegram_message(self):
-        return f"{self.title} {self.id}\n{self.locations}\nTeams: {self.teams}\nSubTeams: {self.sub_teams}\n[Link]({self.link})"
-        
+
     def to_dict(self):
         return {"id": self.id, "title": self.title, "locations": self.locations, "teams": self.teams, "sub_teams": self.sub_teams}
 

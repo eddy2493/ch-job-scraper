@@ -17,9 +17,6 @@ class QRTJobListing(JobListing):
     def get_id(self):
         return self.id
 
-    def generate_telegram_message(self):
-        return f"{self.title}\nLocation: {self.location}\n[Link]({self.link})"
-
     def to_dict(self):
         return {
             "id": self.id,
@@ -77,4 +74,4 @@ if __name__ == "__main__":
     jobs = scraper.scrape()
     print(f"Found {len(jobs)} jobs in Zurich")
     for job in jobs:
-        print(job.generate_telegram_message())
+        print(f"{job.title}\n{job.link}")

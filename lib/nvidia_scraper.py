@@ -14,9 +14,6 @@ class NvidiaJobListing(JobListing):
     def get_id(self):
         return self.id
 
-    def generate_telegram_message(self):
-        return f"{self.title} {self.id}\n{self.locations}\n[Link]({self.link})"
-
     def to_dict(self):
         return {
             "id": self.id,

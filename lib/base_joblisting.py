@@ -9,11 +9,6 @@ class JobListing(ABC):
         pass
 
     @abstractmethod
-    def generate_telegram_message(self) -> str:
-        """Generate a formatted Telegram message for the job listing."""
-        pass
-
-    @abstractmethod
     def to_dict(self) -> Dict[str, Any]:
         """Convert the job listing into a dictionary format."""
         pass

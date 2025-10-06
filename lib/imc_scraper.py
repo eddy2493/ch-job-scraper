@@ -17,10 +17,6 @@ class IMCJobListing(JobListing):
     def get_id(self) -> str:
         return self.id
 
-    def generate_telegram_message(self) -> str:
-        dept_info = f" - {self.department}" if self.department else ""
-        return f"*{self.title}*{dept_info}\n{self.location}\n[Link]({self.link})"
-
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,

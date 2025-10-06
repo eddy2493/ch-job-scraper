@@ -17,10 +17,6 @@ class IBMJobListing(JobListing):
     def get_id(self) -> str:
         return self.id
 
-    def generate_telegram_message(self) -> str:
-        work_info = f" ({self.work_type})" if self.work_type else ""
-        return f"*{self.title}*{work_info}\n{self.category}\n[Link]({self.link})"
-
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,

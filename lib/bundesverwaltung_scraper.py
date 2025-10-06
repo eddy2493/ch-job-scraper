@@ -17,9 +17,6 @@ class BundesverwaltungJobListing(JobListing):
     def get_id(self) -> str:
         return self.id
 
-    def generate_telegram_message(self) -> str:
-        return f"*{self.title}*\n{self.department}\n{self.location}\n[Link]({self.link})"
-
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,

@@ -42,10 +42,7 @@ class JBJobListing(JobListing):
             return None
     def get_id(self):
         return self.id
-    
-    def generate_telegram_message(self):
-        return f"{self.title} {self.id}\n{self.locations}\nLocation from Link: {self.location_from_link}\n[Link]({self.link})"
-            
+
     def to_dict(self):
         return {"id": self.id, "title": self.title, "locations": self.locations, "link": self.link, "location_from_link": self.location_from_link}
        
