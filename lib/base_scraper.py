@@ -32,7 +32,7 @@ class JobScraper(ABC):
             print(f"State saved to {filename}")
 
             # Cleanup states older than 24 hours
-            self._cleanup_old_states(folder, max_age_hours=24)
+            #self._cleanup_old_states(folder, max_age_hours=24)
         except Exception as e:
             print(f"Failed to save state: {e}")
 
