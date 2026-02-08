@@ -1,2 +1,6 @@
 creds.txt
 __pycache__/
+*/
+!lib/
+scraper.log
+.idea/

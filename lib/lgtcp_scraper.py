@@ -36,7 +36,7 @@ class LGTCPJobScraper(JobScraper):
     def __init__(self):
         super().__init__(company_name="LGTCP")
         self.logo_path = "lib/LGTCP.jpg"
-        self.url = 'https://lgtcp.wd3.myworkdayjobs.com/wday/cxs/lgtcp/lgtcpcurrentvacancies/jobs'
+        self.url = 'https://lgtcp.wd502.myworkdayjobs.com/wday/cxs/lgtcp/lgtcpcurrentvacancies/jobs'
         self.json_data = {
             'appliedFacets': {
                 # Pfäffikon, Switzerland
@@ -70,9 +70,8 @@ class LGTCPJobScraper(JobScraper):
             jobs = data.get('jobPostings', [])
             for job in jobs:
                 job_id = job.get('bulletFields', [None])[0]
-                # e.g., "Student-Support---Data-analytics---Client-Services-Liquid-Markets-40-_JR1751-1"
                 job_slug = job.get('externalPath').split('/')[-1]
-                job_url = f"https://lgtcp.wd3.myworkdayjobs.com/en-US/lgtcpcurrentvacancies/details/{job_slug}"
+                job_url = f"https://lgtcp.wd502.myworkdayjobs.com/en-US/lgtcpcurrentvacancies/details/{job_slug}"
                 all_jobs.append(
                     LGTCPJobListing(
                         listing_id=job_id,

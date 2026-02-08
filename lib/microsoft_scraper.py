@@ -3,16 +3,14 @@ from lib.base_scraper import JobScraper
 from typing import List, Dict, Any
 import requests
 import logging
-import re
-import json
- 
+
 class MicrosoftJobListing(JobListing):
-    def __init__(self, listing_id: str, title:str, profession: str):
+    def __init__(self, listing_id: str, title:str, department: str):
         self.id = listing_id
         self.title = title
-        self.profession = profession
-        self.link = f"https://jobs.careers.microsoft.com/global/en/job/{listing_id}/"
-        
+        self.profession = department
+        self.link = f"https://apply.careers.microsoft.com/careers/job/{listing_id}"
+
     def get_id(self):
         return self.id
 
@@ -23,34 +21,45 @@ class MicrosoftJobScraper(JobScraper):
     def __init__(self):
         super().__init__(company_name="Microsoft")
         self.logo_path = "lib/microsoft.png"
-        self.url = 'https://gcsservices.careers.microsoft.com/search/api/v1/search'
+        self.url = 'https://apply.careers.microsoft.com/api/pcsx/search'
         self.params = {
-            'lc': 'Switzerland',
-            'l': 'en_us',
-            'pg': '1',
-            'pgSz': '20',
-            'o': 'Relevance',
-            'flt': 'true',
+            'domain': 'microsoft.com',
+            'query': '',
+            'location': 'switzerland',
+            'start': '0',
+            'sort_by': 'distance',
+            'filter_include_remote': '1',
+            'hl': 'en',
         }
+        self.page_size = 10
+
     def scrape(self):
         all_jobs = []
-        page = 1
+        start = 0
 
         while True:
-            self.params["pg"] = str(page)
+            self.params["start"] = str(start)
             try:
-                response = requests.get(self.url, params=self.params).json()
-                jobs_on_page = response["operationResult"]["result"]["jobs"]
-                all_jobs.extend(jobs_on_page)
-            except:
-                logging.error(f"Unable to scrape {self.company}")
-
-            # Break when there are no more jobs to fetch
-            if len(all_jobs) >= response["operationResult"]["result"]["totalJobs"]:
+                response = requests.get(self.url, params=self.params)
+                response.raise_for_status()
+                positions = response.json()["data"]["positions"]
+            except Exception as e:
+                logging.error(f"Unable to scrape {self.company}: {e}")
                 break
-            page += 1
-            
-        self.current_listings.extend([MicrosoftJobListing(a["jobId"], a["title"], a["properties"]["profession"]) for a in all_jobs])
+
+            if not positions:
+                break
+
+            all_jobs.extend(positions)
+            if len(positions) < self.page_size:
+                break
+            start += self.page_size
+
+        self.current_listings.extend([
+            MicrosoftJobListing(str(a["id"]), a["name"], a.get("department", ""))
+            for a in all_jobs
+        ])
         return self.current_listings
+
     def _create_listing_from_dict(self, data: Dict[str, Any]) -> MicrosoftJobListing:
         return MicrosoftJobListing(data["id"], data["title"], data["profession"])

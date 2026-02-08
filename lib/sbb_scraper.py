@@ -28,7 +28,7 @@ class SBBJobListing(JobListing):
 class SBBJobScraper(JobScraper):
     def __init__(self):
         super().__init__(company_name="SBB")
-        self.api_url = "https://company.sbb.ch/content/internet/corporate/de/jobs-karriere/offene-stellen/job-suche/jcr:content/parmain/jobfilter.results.json"
+        self.api_url = "https://company.sbb.ch/content/internet/corporate/de/jobs-karriere/jobs/job-suche/jcr:content/parmain/jobfilter.results.json"
         self.topic = "IT / Telekommunikation"
         self.logo_path = "lib/sbb.png"
 
