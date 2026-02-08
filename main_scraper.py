@@ -99,8 +99,12 @@ def send_telegram_photo_with_text(bot_token: str, chat_id: str, file_path: str, 
 
 
 # --- Main Loop ---
-scrapers = [GoogleJobScraper(), MetaJobScraper(), NvidiaJobScraper(
-), AppleJobScraper(), MicrosoftJobScraper(), SnapJobScraper(), AmazonJobScraper(), BKWJobScraper(), LGTCPJobScraper(), JBJobScraper(), LGTJobScraper(), ZKBJobScraper(), AlpiqJobScraper(), METJobScraper(), CitadelJobScraper(), QRTJobScraper(), GetYourGuideJobScraper(), IBMJobScraper(), OracleJobScraper(), AxpoJobScraper()]
+scrapers = [GoogleJobScraper(), MetaJobScraper(), NvidiaJobScraper(),
+            AppleJobScraper(), MicrosoftJobScraper(), SnapJobScraper(), AmazonJobScraper(),
+            BKWJobScraper(), LGTCPJobScraper(), JBJobScraper(), LGTJobScraper(), ZKBJobScraper(),
+            AlpiqJobScraper(), METJobScraper(), CitadelJobScraper(), QRTJobScraper(),
+            GetYourGuideJobScraper(), IBMJobScraper(), OracleJobScraper(), AxpoJobScraper(),
+            BundesverwaltungJobScraper(), IMCJobScraper(), MathrixJobScraper(), SBBJobScraper()]
 for scraper in scrapers:
     logging.info(f"Starting scraper for {scraper.company}")
     try:
