@@ -29,10 +29,22 @@ class SwissReJobListing(JobListing):
 class SwissReJobScraper(JobScraper):
     def __init__(self):
         super().__init__(company_name="Swiss Re")
-        self.base_url = "https://careers.swissre.com/go/Zurich/4267301/"
+        self.base_url = "https://careers.swissre.com/search/"
+        self.job_families = ["Asset+Management", "Data", "Finance", "Technology"]
+        self.location = "Zurich, Zurich, CH"
+        self.shifttype = "Regular Employment"
         self.logo_path = "lib/swissre.png"
 
+    def _build_filter_url(self, job_family: str) -> str:
+        return (
+            f"{self.base_url}?q="
+            f"&optionsFacetsDD_customfield2={job_family}"
+            f"&optionsFacetsDD_location={self.location}"
+            f"&optionsFacetsDD_shifttype={self.shifttype}"
+        )
+
     def scrape(self) -> List[SwissReJobListing]:
+        seen_ids = set()
         listings = []
         session = requests.Session()
         session.headers.update({
@@ -41,19 +53,19 @@ class SwissReJobScraper(JobScraper):
         })
 
         try:
-            # Fetch first page to determine total pages
-            html = self._fetch_page(session, 1)
-            if not html:
-                return listings
+            for family in self.job_families:
+                filter_url = self._build_filter_url(family)
+                html = self._fetch_page(session, filter_url, 1)
+                if not html:
+                    continue
 
-            listings.extend(self._parse_jobs(html))
+                self._collect_jobs(html, listings, seen_ids)
 
-            # Check for additional pages
-            total_pages = self._get_total_pages(html)
-            for page in range(2, total_pages + 1):
-                page_html = self._fetch_page(session, page)
-                if page_html:
-                    listings.extend(self._parse_jobs(page_html))
+                total_pages = self._get_total_pages(html)
+                for page in range(2, total_pages + 1):
+                    page_html = self._fetch_page(session, filter_url, page)
+                    if page_html:
+                        self._collect_jobs(page_html, listings, seen_ids)
 
         except Exception as e:
             logging.error(f"Error scraping Swiss Re jobs: {e}")
@@ -61,21 +73,25 @@ class SwissReJobScraper(JobScraper):
         self.current_listings = listings
         return listings
 
-    def _fetch_page(self, session: requests.Session, page: int) -> str:
-        url = self.base_url if page == 1 else f"{self.base_url}?page={page}"
+    def _fetch_page(self, session: requests.Session, filter_url: str, page: int) -> str:
+        url = filter_url if page == 1 else f"{filter_url}&page={page}"
         response = session.get(url)
         if response.status_code != 200:
             logging.error(f"Swiss Re returned {response.status_code} for page {page}")
             return None
         return response.text
 
+    def _collect_jobs(self, html: str, listings: List, seen_ids: set):
+        for job in self._parse_jobs(html):
+            if job.id not in seen_ids:
+                seen_ids.add(job.id)
+                listings.append(job)
+
     def _parse_jobs(self, html: str) -> List[SwissReJobListing]:
         jobs = []
-        # Each job is in a <tr class="data-row"> block
         rows = re.findall(r'<tr class="data-row">(.*?)</tr>', html, re.DOTALL)
 
         for row in rows:
-            # Extract title and link from first jobTitle-link (hidden-phone version)
             title_match = re.search(
                 r'<a\s+href="(/job/[^"]+)"\s+class="jobTitle-link">([^<]+)</a>',
                 row
@@ -87,11 +103,9 @@ class SwissReJobScraper(JobScraper):
             title = unescape(title_match.group(2).strip())
             link = f"https://careers.swissre.com{path}"
 
-            # Extract job ID from the URL path (last numeric segment)
             id_match = re.search(r'/(\d+)/', path)
             listing_id = id_match.group(1) if id_match else path
 
-            # Extract location from jobLocation span (non-header one)
             loc_match = re.search(
                 r'<span class="jobLocation">\s*\n\s*([^<]+)',
                 row
@@ -108,7 +122,6 @@ class SwissReJobScraper(JobScraper):
         return jobs
 
     def _get_total_pages(self, html: str) -> int:
-        # Look for "Page X of Y" in the pagination
         match = re.search(r'Page\s+\d+\s+of\s+(\d+)', html)
         return int(match.group(1)) if match else 1
 
