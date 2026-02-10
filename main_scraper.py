@@ -115,6 +115,10 @@ for scraper in scrapers:
         old_jobs = scraper.load_previous_state()
         new_jobs = scraper.scrape()
 
+        if not new_jobs and old_jobs:
+            logging.warning(f"{scraper.company} - scrape returned 0 results, skipping (possible maintenance)")
+            continue
+
         old_job_ids = {job.get_id(): job for job in old_jobs}
         new_job_ids = {job.get_id(): job for job in new_jobs}
 
