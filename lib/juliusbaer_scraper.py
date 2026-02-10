@@ -90,6 +90,8 @@ class JBJobScraper(JobScraper):
             # Extract job postings
             jobs = data.get('jobPostings', [])
             for job in jobs:
+                if not job.get('title') or not job.get('externalPath'):
+                    continue
                 job_info = {
                     'title': job.get('title'),
                     'locations': job.get('locationsText'),
