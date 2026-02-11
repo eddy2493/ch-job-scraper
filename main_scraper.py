@@ -34,6 +34,7 @@ from lib.zurich_scraper import ZurichJobScraper
 from lib.postfinance_scraper import PostFinanceJobScraper
 from lib.mobiliar_scraper import MobiliarJobScraper
 from lib.redhat_scraper import RedHatJobScraper
+from lib.databricks_scraper import DatabricksJobScraper
 
 # Change the working directory to the script's directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -134,7 +135,8 @@ scrapers = [GoogleJobScraper(), MetaJobScraper(), NvidiaJobScraper(),
             GetYourGuideJobScraper(), IBMJobScraper(), OracleJobScraper(), AxpoJobScraper(),
             BundesverwaltungJobScraper(), IMCJobScraper(), MathrixJobScraper(), SBBJobScraper(),
             SwisscomJobScraper(), SwissReJobScraper(), ZurichJobScraper(),
-            PostFinanceJobScraper(), MobiliarJobScraper(), RedHatJobScraper()]
+            PostFinanceJobScraper(), MobiliarJobScraper(), RedHatJobScraper(),
+            DatabricksJobScraper()]
 for scraper in scrapers:
     logging.info(f"Starting scraper for {scraper.company}")
     try:
