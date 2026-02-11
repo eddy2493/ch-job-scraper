@@ -61,7 +61,7 @@ class PostFinanceJobScraper(JobScraper):
             if dept not in self.FILTER_DEPARTMENTS:
                 continue
 
-            listing_id = str(job.get("id", ""))
+            listing_id = str(job.get("referenceNumber", ""))
             title = job.get("title", "")
             link = job.get("link", "")
             city = job.get("city", "")
