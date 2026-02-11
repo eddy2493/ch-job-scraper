@@ -3,6 +3,7 @@ import requests
 import time
 import json
 import os
+from datetime import datetime, timedelta
 from lib.google_scraper import GoogleJobScraper
 from lib.meta_scraper import MetaJobScraper
 from lib.nvidia_scraper import NvidiaJobScraper
@@ -68,6 +69,27 @@ def chunk_by_jobs(jobs_list, header="", max_length=1000):
     return chunks
 
 
+DELIST_GRACE_HOURS = 2
+
+
+def load_delisting_tracker(folder: str) -> dict:
+    path = os.path.join(folder, "delisting_tracker.json")
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, "r") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def save_delisting_tracker(folder: str, tracker: dict):
+    path = os.path.join(folder, "delisting_tracker.json")
+    os.makedirs(folder, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(tracker, f)
+
+
 def send_telegram_message(bot_token: str, chat_id: str, text: str):
     """Send a text message via Telegram without link previews."""
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
@@ -126,12 +148,38 @@ for scraper in scrapers:
         old_job_ids = {job.get_id(): job for job in old_jobs}
         new_job_ids = {job.get_id(): job for job in new_jobs}
 
-        new_listings = [job for jid, job in new_job_ids.items() if jid not in old_job_ids]
-        delisted_listings = [job for jid, job in old_job_ids.items() if jid not in new_job_ids]
+        tracker = load_delisting_tracker(scraper.company)
+        now = datetime.now().isoformat()
+        cutoff = (datetime.now() - timedelta(hours=DELIST_GRACE_HOURS)).isoformat()
 
-        if new_listings or delisted_listings:
+        # Jobs that disappeared: add to tracker if not already tracked
+        disappeared = {jid for jid in old_job_ids if jid not in new_job_ids}
+        for jid in disappeared:
+            if jid not in tracker:
+                tracker[jid] = now
+
+        # Jobs that reappeared: silently remove from tracker
+        for jid in list(tracker.keys()):
+            if jid in new_job_ids:
+                del tracker[jid]
+
+        # Only report delistings past the grace period
+        confirmed_delisted = [old_job_ids[jid] for jid in disappeared
+                              if tracker.get(jid, now) <= cutoff and jid in old_job_ids]
+
+        # Remove confirmed delistings from tracker
+        for job in confirmed_delisted:
+            tracker.pop(job.get_id(), None)
+
+        # New listings: only report if not in tracker (i.e. not a flicker reappearance)
+        new_listings = [job for jid, job in new_job_ids.items()
+                        if jid not in old_job_ids and jid not in tracker]
+
+        save_delisting_tracker(scraper.company, tracker)
+
+        if new_listings or confirmed_delisted:
             scraper.save()
-            logging.info(f"{scraper.company} - {len(new_listings)} new, {len(delisted_listings)} delisted jobs")
+            logging.info(f"{scraper.company} - {len(new_listings)} new, {len(confirmed_delisted)} delisted jobs")
 
             message_lines = []
 
@@ -140,9 +188,9 @@ for scraper in scrapers:
                 for job in new_listings:
                     message_lines.append(f"{job.title} - [Link]({job.link})")
 
-            if delisted_listings:
+            if confirmed_delisted:
                 message_lines.append(f"\n*DELISTED* ({scraper.company})")
-                for job in delisted_listings:
+                for job in confirmed_delisted:
                     message_lines.append(f"{job.title}")
 
             # Build chunks safely
