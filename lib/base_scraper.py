@@ -63,7 +63,7 @@ class JobScraper(ABC):
             print(f"No folder found for {folder}.")
             return []
 
-        json_files = [f for f in os.listdir(folder) if f.endswith(".json")]
+        json_files = [f for f in os.listdir(folder) if f.startswith("state_") and f.endswith(".json")]
         if not json_files:
             print(f"No previous state files found in {folder}.")
             return []
