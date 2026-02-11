@@ -1,0 +1,103 @@
+from lib.base_joblisting import JobListing
+from lib.base_scraper import JobScraper
+from typing import List, Dict, Any
+import requests
+import logging
+import json
+
+
+class AdobeJobListing(JobListing):
+    def __init__(self, listing_id: str, title: str, location: str, link: str):
+        self.id = listing_id
+        self.title = title
+        self.location = location
+        self.link = link
+
+    def get_id(self) -> str:
+        return self.id
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "title": self.title,
+            "location": self.location,
+            "link": self.link
+        }
+
+
+class AdobeJobScraper(JobScraper):
+    def __init__(self):
+        super().__init__(company_name="Adobe")
+        self.logo_path = "lib/adobe.png"
+        self.url = "https://careers.adobe.com/us/en/search-results?qcountry=Switzerland"
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+        }
+
+    def scrape(self) -> List[AdobeJobListing]:
+        listings = []
+
+        try:
+            response = requests.get(self.url, headers=self.headers, timeout=15)
+            if response.status_code != 200:
+                logging.error(f"Adobe returned {response.status_code}")
+                return listings
+
+            jobs = self._extract_jobs(response.text)
+
+            for job in jobs:
+                if job.get('country', '') != 'Switzerland':
+                    continue
+
+                job_url = f"https://careers.adobe.com/us/en/job/{job.get('jobId', '')}"
+                listings.append(AdobeJobListing(
+                    listing_id=job.get('jobId', ''),
+                    title=job.get('title', ''),
+                    location=f"{job.get('city', '')}, {job.get('country', '')}",
+                    link=job_url
+                ))
+
+            self.current_listings = listings
+
+        except Exception as e:
+            logging.error(f"Error scraping Adobe jobs: {e}")
+
+        return listings
+
+    def _extract_jobs(self, html: str) -> list:
+        """Extract jobs array from embedded Phenom SSR data."""
+        idx = html.find('"jobs":[{')
+        if idx == -1:
+            return []
+
+        start = idx + len('"jobs":')
+        bracket = 0
+        i = start
+        while i < len(html):
+            c = html[i]
+            if c == '[':
+                bracket += 1
+            elif c == ']':
+                bracket -= 1
+                if bracket == 0:
+                    end = i + 1
+                    break
+            elif c == '"':
+                i += 1
+                while i < len(html) and html[i] != '"':
+                    if html[i] == '\\':
+                        i += 1
+                    i += 1
+            i += 1
+        else:
+            return []
+
+        return json.loads(html[start:end])
+
+    def _create_listing_from_dict(self, data: Dict[str, Any]) -> AdobeJobListing:
+        return AdobeJobListing(
+            listing_id=data["id"],
+            title=data["title"],
+            location=data["location"],
+            link=data["link"]
+        )
