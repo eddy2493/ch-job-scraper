@@ -64,7 +64,7 @@ class RedHatJobScraper(JobScraper):
                     continue
                 job_id = job.get("bulletFields", [None])[0]
                 job_slug = job.get("externalPath").split("/")[-1]
-                job_url = f"https://redhat.wd5.myworkdayjobs.com/en-US/jobs/details/{job_slug}"
+                job_url = f"https://redhat.wd5.myworkdayjobs.com/en-US/jobs/details/{job_slug}?a=187134fccb084a0ea9b4b95f23890dbe"
                 all_jobs.append(
                     RedHatJobListing(
                         listing_id=job_id,
