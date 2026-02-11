@@ -58,12 +58,14 @@ class GetYourGuideJobScraper(JobScraper):
                     # Extract job ID from the URL or use internal_job_id
                     job_id = str(job.get("id", ""))
 
+                    link = f"https://getyourguide.careers/jobs/{job_id}"
+
                     listing = GetYourGuideJobListing(
                         listing_id=job_id,
                         title=job.get("title", ""),
                         team=team,
                         location=location_name,
-                        link=job.get("absolute_url", "")
+                        link=link
                     )
                     listings.append(listing)
 
