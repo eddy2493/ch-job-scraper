@@ -69,6 +69,8 @@ class LGTCPJobScraper(JobScraper):
 
             jobs = data.get('jobPostings', [])
             for job in jobs:
+                if not job.get('title') or not job.get('externalPath'):
+                    continue
                 job_id = job.get('bulletFields', [None])[0]
                 job_slug = job.get('externalPath').split('/')[-1]
                 job_url = f"https://lgtcp.wd502.myworkdayjobs.com/en-US/lgtcpcurrentvacancies/details/{job_slug}"

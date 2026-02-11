@@ -54,6 +54,8 @@ class NvidiaJobScraper(JobScraper):
                 total_jobs = data.get('total', 0)
 
             for job in data.get('jobPostings', []):
+                if not job.get('title') or not job.get('externalPath'):
+                    continue
                 job_id = job.get('bulletFields', [None])[0]
                 external_path = job.get('externalPath', '')
                 # Correct full URL

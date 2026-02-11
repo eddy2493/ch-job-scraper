@@ -73,6 +73,8 @@ class SwisscomJobScraper(JobScraper):
 
             jobs = data.get('jobPostings', [])
             for job in jobs:
+                if not job.get('title') or not job.get('externalPath'):
+                    continue
                 job_id = job.get('bulletFields', [None])[0]
                 job_slug = job.get('externalPath').split('/')[-1]
                 job_url = f"https://swisscom.wd103.myworkdayjobs.com/de-DE/SwisscomExternalCareers/details/{job_slug}"
