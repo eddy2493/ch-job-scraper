@@ -169,11 +169,6 @@ for scraper in scrapers:
             if jid not in tracker:
                 tracker[jid] = now
 
-        # Jobs that reappeared: silently remove from tracker
-        for jid in list(tracker.keys()):
-            if jid in new_job_ids:
-                del tracker[jid]
-
         # Only report delistings past the grace period
         confirmed_delisted = [old_job_ids[jid] for jid in disappeared
                               if tracker.get(jid, now) <= cutoff and jid in old_job_ids]
@@ -185,6 +180,11 @@ for scraper in scrapers:
         # New listings: only report if not in tracker (i.e. not a flicker reappearance)
         new_listings = [job for jid, job in new_job_ids.items()
                         if jid not in old_job_ids and jid not in tracker]
+
+        # Jobs that reappeared: silently remove from tracker (after new_listings check)
+        for jid in list(tracker.keys()):
+            if jid in new_job_ids:
+                del tracker[jid]
 
         save_delisting_tracker(scraper.company, tracker)
 
