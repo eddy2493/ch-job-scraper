@@ -91,6 +91,11 @@ class GoogleJobScraper(JobScraper):
                         locations.append(location_container.text.strip())
                         location_container = location_container.find_next_sibling('span')
                     result[label] = ' '.join(locations)
+                elif icon == "bar_chart":
+                    # bar_chart is nested in a button/tooltip widget
+                    wvstab = div.find('span', class_='wVSTAb')
+                    if wvstab:
+                        result[label] = wvstab.text.strip()
                 else:
                     # For other icons, get the next sibling <span> text
                     next_span = icon_tag.find_next_sibling('span')
@@ -103,7 +108,7 @@ class GoogleJobScraper(JobScraper):
         if pref_qual_section:
             pref_quali = [li.get_text(strip=True) for li in pref_qual_section.find_next('ul').find_all('li')]
 
-        return GoogleJobListing(listing_id, title, min_quali, pref_quali, link, result["Location"], result["Company"], result["Position"])
+        return GoogleJobListing(listing_id, title, min_quali, pref_quali, link, result.get("Location", ""), result.get("Company", ""), result.get("Position", ""))
 
     def _create_listing_from_dict(self, data: Dict[str, Any]) -> GoogleJobListing:
         return GoogleJobListing(data["id"], data["title"], data["min_quali"], data["pref_quali"], data["link"], data["location"], data["division"], data["position"])
