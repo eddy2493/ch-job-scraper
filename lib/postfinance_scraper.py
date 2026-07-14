@@ -1,6 +1,7 @@
 from lib.base_joblisting import JobListing
 from lib.base_scraper import JobScraper
 from typing import List, Dict, Any
+from html import unescape
 import requests
 import logging
 
@@ -29,45 +30,85 @@ class PostFinanceJobListing(JobListing):
 
 
 class PostFinanceJobScraper(JobScraper):
-    FILTER_DEPARTMENTS = {
-        "Informatik",
-    }
+    # Keep only IT roles; the careers API groups them under this category (filter1).
+    FILTER_KEYWORD = "Informatik"
+    MAX_PAGES = 20
 
     def __init__(self):
         super().__init__(company_name="PostFinance")
         self.logo_path = "lib/postfinance.png"
-        self.url = "https://www.postfinance.ch/pfch/rest/api/job-tool/jobs/all"
+        self.url = "https://jobs.postfinance.ch/services/recruiting/v1/jobs"
+        self.locale = "de_DE"
         self.headers = {
-            "accept": "application/json",
+            "accept": "*/*",
             "content-type": "application/json",
             "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
-            "referer": "https://www.postfinance.ch/de/ueber-uns/arbeiten-postfinance/offene-stellen.html",
+            "origin": "https://jobs.postfinance.ch",
+            "referer": "https://jobs.postfinance.ch/search?locale=de_DE&searchResultView=LIST",
+        }
+
+    def _payload(self, page: int) -> Dict[str, Any]:
+        return {
+            "locale": self.locale,
+            "pageNumber": page,
+            "sortBy": "",
+            "keywords": "",
+            "location": "",
+            "facetFilters": {},
+            "brand": "PostFinance",
+            "skills": [],
+            "categoryId": 0,
+            "alertId": "",
+            "rcmCandidateId": "",
         }
 
     def scrape(self) -> List[PostFinanceJobListing]:
-        try:
-            response = requests.get(self.url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-        except Exception as e:
-            logging.error(f"PostFinance scrape failed: {e}")
-            return []
-
-        jobs = data.get("result", data) if isinstance(data, dict) else data
-
+        seen_ids = set()
         listings = []
-        for job in jobs:
-            dept = job.get("department", {}).get("langDe", "")
-            if dept not in self.FILTER_DEPARTMENTS:
-                continue
 
-            listing_id = str(job.get("referenceNumber", ""))
-            title = job.get("title", "")
-            link = job.get("link", "")
-            city = job.get("city", "")
-            pensum = job.get("pensum", "")
+        for page in range(self.MAX_PAGES):
+            try:
+                response = requests.post(self.url, headers=self.headers, json=self._payload(page))
+                response.raise_for_status()
+                data = response.json()
+            except Exception as e:
+                logging.error(f"PostFinance scrape failed: {e}")
+                return []
 
-            listings.append(PostFinanceJobListing(listing_id, title, link, dept, city, pensum))
+            results = data.get("jobSearchResult", [])
+            if not results:
+                break
+
+            new_on_page = 0
+            for item in results:
+                job = item.get("response", {})
+                listing_id = str(job.get("id", ""))
+                if not listing_id or listing_id in seen_ids:
+                    continue
+                seen_ids.add(listing_id)
+                new_on_page += 1
+
+                category = (job.get("filter1") or [""])[0]
+                if self.FILTER_KEYWORD not in category:
+                    continue
+
+                title = job.get("unifiedStandardTitle", "")
+                url_title = unescape(job.get("urlTitle", ""))
+                link = f"https://jobs.postfinance.ch/PostFinance/job/{url_title}/{listing_id}-{self.locale}"
+
+                # "Bern|Bern|BE|Schweiz|CHE " -> "Bern"
+                cities = [loc.split("|")[0].strip() for loc in job.get("jobLocationShort", [])]
+                city = ", ".join(dict.fromkeys(c for c in cities if c))
+
+                wmin = (job.get("cust_WorkingTimeMin") or [""])[0]
+                wmax = (job.get("cust_WorkingTimeMax") or [""])[0]
+                pensum = f"{wmin}-{wmax}%" if wmin and wmax else (f"{wmin or wmax}%" if (wmin or wmax) else "")
+
+                listings.append(PostFinanceJobListing(listing_id, title, link, category, city, pensum))
+
+            total = data.get("totalJobs", 0)
+            if new_on_page == 0 or len(seen_ids) >= total:
+                break
 
         self.current_listings = listings
         return listings

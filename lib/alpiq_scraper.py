@@ -62,7 +62,7 @@ class AlpiqJobScraper(JobScraper):
                 break
 
             soup = BeautifulSoup(response.content, "html.parser")
-            jobs = soup.find_all("ul", class_="job-item")
+            jobs = soup.find_all("li", class_="job-item")
             if not jobs:
                 break  # no more jobs
 

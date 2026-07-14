@@ -34,12 +34,21 @@ class CitadelJobScraper(JobScraper):
         super().__init__(company_name="Citadel Securities")
         self.logo_path = "lib/citadel.png"
         self.url = "https://www.citadelsecurities.com/wp-admin/admin-ajax.php"
+        # The site sits behind Cloudflare; send a full browser-like header set to
+        # reduce the chance of being served a bot-challenge page instead of JSON.
         self.headers = {
             'accept': 'application/json, text/javascript, */*; q=0.01',
+            'accept-language': 'en-US,en;q=0.9',
             'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
             'origin': 'https://www.citadelsecurities.com',
             'referer': 'https://www.citadelsecurities.com/careers/open-opportunities?location-filter=zurich',
-            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64)',
+            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+            'sec-ch-ua': '"Chromium";v="144", "Not(A:Brand";v="24", "Google Chrome";v="144"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Linux"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
             'x-requested-with': 'XMLHttpRequest',
         }
         self.data = 'location-filter=zurich&selected-job-sections=323,325,324,326&current_page=1&sort_order=DESC&per_page=10&action=careers_listing_filter'
@@ -49,6 +58,14 @@ class CitadelJobScraper(JobScraper):
 
         try:
             response = requests.post(self.url, headers=self.headers, data=self.data)
+            # Cloudflare serves an HTML challenge (not JSON) when it flags the request.
+            content_type = response.headers.get("content-type", "")
+            if "application/json" not in content_type:
+                logging.warning(
+                    f"{self.company} - got {response.status_code} non-JSON response "
+                    f"(likely Cloudflare block), skipping"
+                )
+                return self.current_listings
             json_data = response.json()
             html_content = json_data.get("content", "")
             

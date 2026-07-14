@@ -43,6 +43,12 @@ from lib.six_scraper import SIXJobScraper
 from lib.deepmind_scraper import DeepMindJobScraper
 from lib.anthropic_scraper import AnthropicJobScraper
 from lib.thomsonreuters_scraper import ThomsonReutersJobScraper
+from lib.squarepoint_scraper import SquarepointJobScraper
+from lib.man_scraper import ManJobScraper
+from lib.worldquant_scraper import WorldQuantJobScraper
+from lib.openai_scraper import OpenAIJobScraper
+from lib.palantir_scraper import PalantirJobScraper
+from lib.ubs_scraper import UBSJobScraper
 
 # Change the working directory to the script's directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -147,7 +153,9 @@ scrapers = [GoogleJobScraper(), MetaJobScraper(), NvidiaJobScraper(),
             DatabricksJobScraper(), MillenniumJobScraper(),
             VontobelJobScraper(), SNBJobScraper(), AdobeJobScraper(),
             SIXJobScraper(), DeepMindJobScraper(), AnthropicJobScraper(),
-            ThomsonReutersJobScraper()]
+            ThomsonReutersJobScraper(), SquarepointJobScraper(), ManJobScraper(),
+            WorldQuantJobScraper(), OpenAIJobScraper(), PalantirJobScraper(),
+            UBSJobScraper()]
 for scraper in scrapers:
     logging.info(f"Starting scraper for {scraper.company}")
     try:
