@@ -49,6 +49,7 @@ from lib.worldquant_scraper import WorldQuantJobScraper
 from lib.openai_scraper import OpenAIJobScraper
 from lib.palantir_scraper import PalantirJobScraper
 from lib.ubs_scraper import UBSJobScraper
+from lib.raiffeisen_scraper import RaiffeisenJobScraper
 
 # Change the working directory to the script's directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -155,7 +156,7 @@ scrapers = [GoogleJobScraper(), MetaJobScraper(), NvidiaJobScraper(),
             SIXJobScraper(), DeepMindJobScraper(), AnthropicJobScraper(),
             ThomsonReutersJobScraper(), SquarepointJobScraper(), ManJobScraper(),
             WorldQuantJobScraper(), OpenAIJobScraper(), PalantirJobScraper(),
-            UBSJobScraper()]
+            UBSJobScraper(), RaiffeisenJobScraper()]
 for scraper in scrapers:
     logging.info(f"Starting scraper for {scraper.company}")
     try:
