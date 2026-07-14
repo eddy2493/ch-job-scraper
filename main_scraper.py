@@ -84,7 +84,7 @@ def chunk_by_jobs(jobs_list, header="", max_length=1000):
     return chunks
 
 
-DELIST_GRACE_HOURS = 2
+DELIST_GRACE_HOURS = 6
 
 
 def load_delisting_tracker(folder: str) -> dict:
