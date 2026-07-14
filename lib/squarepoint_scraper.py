@@ -31,6 +31,10 @@ class SquarepointJobScraper(JobScraper):
     # Squarepoint's Greenhouse board lists roles across many offices; keep only
     # postings that include a Swiss office.
     CH_OFFICES = {"geneva", "zug", "zurich", "zürich", "lausanne", "basel", "bern"}
+    # Greenhouse office ids for Squarepoint's Swiss locations (Zug, Geneva), used to
+    # build the site's job-detail links. The Greenhouse API's absolute_url points at a
+    # broken SPA path, so we construct the working /opportunity-details link instead.
+    CH_OFFICE_IDS = "14638,14637"  # Zug, Geneva
 
     def __init__(self):
         super().__init__(company_name="Squarepoint")
@@ -75,12 +79,15 @@ class SquarepointJobScraper(JobScraper):
                 departments = job.get('departments', [])
                 department = departments[0]['name'] if departments else ''
 
+                link = (f"https://www.squarepoint-capital.com/opportunity-details"
+                        f"?id={job_id}&gh_jid={job_id}&loc={self.CH_OFFICE_IDS}")
+
                 listings.append(SquarepointJobListing(
                     listing_id=job_id,
                     title=title,
                     location=location,
                     department=department,
-                    link=job.get('absolute_url', '')
+                    link=link
                 ))
 
             self.current_listings = listings
