@@ -63,6 +63,8 @@ from lib.raiffeisen_scraper import RaiffeisenJobScraper
 from lib.partnersgroup_scraper import PartnersGroupJobScraper
 from lib.isomorphic_scraper import IsomorphicJobScraper
 from lib.glencore_scraper import GlencoreJobScraper
+from lib.huawei_scraper import HuaweiJobScraper
+from lib.post_scraper import PostJobScraper
 
 # Keep noise down; scrapers log their own errors at ERROR level.
 logging.basicConfig(level=logging.WARNING, format='%(levelname)s - %(message)s')
@@ -81,6 +83,7 @@ SCRAPERS = [
     ManJobScraper, WorldQuantJobScraper, OpenAIJobScraper, PalantirJobScraper,
     UBSJobScraper, RaiffeisenJobScraper, PartnersGroupJobScraper,
     IsomorphicJobScraper, GlencoreJobScraper,
+    HuaweiJobScraper, PostJobScraper,
 ]
 
 
