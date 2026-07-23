@@ -204,10 +204,27 @@ for scraper in scrapers:
             if jid in new_job_ids:
                 del tracker[jid]
 
+        # Drop stale entries: past the grace period and no longer in the saved state,
+        # so they can never be reported as delisted - they would only suppress a
+        # future NEW for that job forever.
+        for jid in list(tracker.keys()):
+            if jid not in old_job_ids and tracker[jid] <= cutoff:
+                del tracker[jid]
+
         save_delisting_tracker(scraper.company, tracker)
 
-        if new_listings or confirmed_delisted:
+        # Persist the scrape plus anything still inside its delisting grace period.
+        # Saving only the raw scrape would drop a flickering job from the state while
+        # the tracker still holds it, and once the tracker clears it would come back
+        # as NEW every run.
+        pending = [old_job_ids[jid] for jid in tracker
+                   if jid in old_job_ids and jid not in new_job_ids]
+        scraper.current_listings = list(new_job_ids.values()) + pending
+
+        if {job.get_id() for job in scraper.current_listings} != set(old_job_ids):
             scraper.save()
+
+        if new_listings or confirmed_delisted:
             logging.info(f"{scraper.company} - {len(new_listings)} new, {len(confirmed_delisted)} delisted jobs")
 
             message_lines = []
